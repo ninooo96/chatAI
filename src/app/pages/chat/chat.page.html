@@ -1,0 +1,60 @@
+<ion-header >
+  <ion-toolbar color="primary">
+    <ion-title>Chat</ion-title>
+    <ion-buttons slot="end">
+      <ion-button fill="solid" shape="round" (click)="chatService.setVoice()"> 
+        <ion-icon slot="icon-only" [name]="chatService.voice ? 'volume-high-outline' : 'volume-mute-outline'"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding" #content>
+  
+  <ion-grid>
+    <ion-row *ngFor="let message of chatService.messages ">
+      <ion-col size="9" class="message"
+        [offset]="message.myMsg ? 3 : 0"
+        [ngClass]="{ 'my-message': message.myMsg, 'other-message': !message.myMsg }">
+        <b>{{ message.name }}</b><br><br>
+        <span>{{ message.msg }}
+        </span>
+        <!-- <div class="time ion-text-right"><br>{{ message.createdAt?.toMillis() | date:'short' }}</div> -->
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+
+</ion-content>
+
+
+<ion-footer>
+  <ion-toolbar color="light">
+    <ion-row class="ion-align-items-center">
+      <ion-col size="12">
+        <ion-textarea autoGrow="true" class="message-input" rows="1" (click)="onClickTextArea()" maxLength="500" [(ngModel)]="newMsg">
+        </ion-textarea>
+      </ion-col>
+      <!-- <ion-col size="2">
+        <ion-button expand="block" fill="clear" color="primary" [disabled]="newMsg === ''" 
+        class="msg-btn" (click)="setMessage()">
+        <ion-icon name="send" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-col> -->
+      <!-- <ion-col size="2">
+        <ion-button expand="block" fill="clear" color="primary">
+          <ion-icon name="mic-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-col> -->
+    </ion-row>
+    <ion-buttons slot="end">
+      <ion-button expand="block" fill="clear" color="primary" [disabled]="newMsg === ''" 
+        class="msg-btn" (click)="setMessage()">
+        <ion-icon name="send" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button size="5" fill="clear" shape="circle" (click)="chatService.setVoice()"> 
+        <ion-icon slot="icon-only" name="mic-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>
