@@ -28,7 +28,6 @@
     "@capacitor/haptics": "5.0.6",
     "@capacitor/keyboard": "5.0.6",
     "@capacitor/status-bar": "5.0.6",
-    "@ionic-native/text-to-speech": "^5.36.0",
     "@ionic/angular": "^7.0.0",
     "assert": "^2.1.0",
     "buffer": "^2.1.6",

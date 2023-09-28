@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
-// import { Preferences } from '@capacitor/preferences';
+import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import {Platform} from '@ionic/angular';
 
 @Injectable({
@@ -19,6 +19,7 @@ export class ChatService {
 
   public setVoice(){
     this.voice = !this.voice
+    
   }
   
 }

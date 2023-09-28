@@ -1,8 +1,8 @@
 import { Component, OnInit, Injectable, ViewChild } from '@angular/core';
 import {ChatService } from '../../services/chat.service';
-import { TextToSpeech } from '@capacitor-community/text-to-speech';
-// import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
 import { HttpClient, HttpErrorResponse} from '@angular/common/http';
+import { TextToSpeech } from '@capacitor-community/text-to-speech';
+
 import { Observable } from 'rxjs';
 import { IonContent } from '@ionic/angular';
 
@@ -33,7 +33,9 @@ export class ChatPage implements OnInit {
       name: "AI",
       myMsg: false
     })
+    
   }
+  
 
   public async setMessage() {
     this.chatService.addNewMessage({
@@ -63,36 +65,65 @@ export class ChatPage implements OnInit {
     }
 
   private getResponse(msg: string){
-    
     console.log(this.url + msg)
     this.http.get<any>(this.url + msg).forEach(
       (data => {
+        this.aiMsg = data
         this.chatService.addNewMessage({
-          msg: data,
+          msg: this.aiMsg,
           name: "AI",
           myMsg: false
         })
         console.log(data)
-        setTimeout(() => {
-        this.content.scrollToBottom(300)}, 200);
+        if(this.chatService.voice && !this.first){
+          console.log(this.aiMsg)
+          // TextToSpeech.getSupportedLanguages().then((lang: any)  => console.log(lang))
+          // TextToSpeech.getSupportedVoices().then((voice: any) => console.log(voice))
+          TextToSpeech.speak({
+            text: this.aiMsg,
+            lang: 'it-IT',
+            rate: 1.2,
+            pitch: 1.0,
+            volume: 1.0,
+            voice: 11,
+            category: 'ambient'
+          })
+          // .then(() => console.log('Done'))
+          // .catch((reason: any) => console.log(reason));
+          }
+        
       })).catch((err: HttpErrorResponse) => {
+        this.aiMsg = "Codice errato o connessione persa. \nScrivi il codice per collegarti al Public URL";
         this.chatService.addNewMessage({
-          msg: "Codice errato o connessione persa. \nScrivi il codice per collegarti al Public URL",
+          msg: this.aiMsg,
           name: "AI",
           myMsg: false
         })
         this.first=true
-      })
-
-      if(this.chatService.voice){
-        // this.textToSpeech
-        // .speak("ciao antonio")
-        // .then(() => console.log('Done'))
-        // .catch((reason: any) => console.log(reason));
-        // TextToSpeech.speak()
+      }).then(() => {
+        if(this.chatService.voice && this.first){
+          // TextToSpeech.getSupportedLanguages().then((lang: any)  => console.log(lang))
+          // TextToSpeech.getSupportedVoices().then((voice: any) => console.log(voice))
+          TextToSpeech.speak({
+            text: this.aiMsg,
+            lang: 'it-IT',
+            rate: 1.2,
+            pitch: 1.0,
+            volume: 1.0,
+            voice: 11,
+            category: 'ambient'
+          })
       }
-    
+      setTimeout(() => {
+        this.content.scrollToBottom(300)}, 200);
+    })
+
+    setTimeout(() => {
+      this.content.scrollToBottom(300)}, 200);
+
     }
+    
+
     
   
 }
