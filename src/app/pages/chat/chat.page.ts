@@ -2,9 +2,9 @@ import { Component, OnInit, Injectable, ViewChild } from '@angular/core';
 import {ChatService } from '../../services/chat.service';
 import { HttpClient, HttpErrorResponse} from '@angular/common/http';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
-
 import { Observable } from 'rxjs';
 import { IonContent } from '@ionic/angular';
+import { getLocaleWeekEndRange } from '@angular/common';
 
 
 
@@ -23,9 +23,12 @@ export class ChatPage implements OnInit {
   newMsg = '';
   aiMsg='';
   url = "";
+  voice = 0;
   first = true;
 
-  constructor(public chatService: ChatService, private http: HttpClient) { }
+  public supportedVoices: SpeechSynthesisVoice[] = [];
+
+  constructor(public chatService: ChatService, private http: HttpClient) {}
 
   ngOnInit() {
     this.chatService.addNewMessage({
@@ -33,6 +36,17 @@ export class ChatPage implements OnInit {
       name: "AI",
       myMsg: false
     })
+
+    TextToSpeech.getSupportedVoices().then(result => {
+      this.supportedVoices = result.voices;
+      console.log(result.voices.length);
+      for (let i = 0; i < this.supportedVoices.length; i++) {
+        if(this.supportedVoices[i].lang == "it-IT"){
+          this.voice = i;
+          break;
+        }
+      }
+    });
     
   }
   
@@ -43,10 +57,11 @@ export class ChatPage implements OnInit {
       name: "Antonio",
       myMsg: true
     })
-
+    console.log(this.first)
     if (this.first) {
       this.url = "https://" + this.newMsg.trim() + ".ngrok.io/chat?question="
       this.getResponse("Salutami")
+      console.log("primo messaggio")
       this.first = false
     } else {
       this.getResponse(this.newMsg)
@@ -68,28 +83,25 @@ export class ChatPage implements OnInit {
     console.log(this.url + msg)
     this.http.get<any>(this.url + msg).forEach(
       (data => {
-        this.aiMsg = data
+        this.aiMsg = data[0]
         this.chatService.addNewMessage({
           msg: this.aiMsg,
           name: "AI",
           myMsg: false
         })
-        console.log(data)
+        console.log(data[0])
         if(this.chatService.voice && !this.first){
-          console.log(this.aiMsg)
-          // TextToSpeech.getSupportedLanguages().then((lang: any)  => console.log(lang))
-          // TextToSpeech.getSupportedVoices().then((voice: any) => console.log(voice))
+          console.log(this.voice)
+          TextToSpeech.stop()
           TextToSpeech.speak({
             text: this.aiMsg,
-            lang: 'it-IT',
-            rate: 1.2,
+            lang: 'IT-it',
+            rate: 1.0,
             pitch: 1.0,
             volume: 1.0,
-            voice: 11,
+            voice: this.voice,
             category: 'ambient'
           })
-          // .then(() => console.log('Done'))
-          // .catch((reason: any) => console.log(reason));
           }
         
       })).catch((err: HttpErrorResponse) => {
@@ -100,17 +112,16 @@ export class ChatPage implements OnInit {
           myMsg: false
         })
         this.first=true
-      }).then(() => {
+      })
+      .then(() => {
         if(this.chatService.voice && this.first){
-          // TextToSpeech.getSupportedLanguages().then((lang: any)  => console.log(lang))
-          // TextToSpeech.getSupportedVoices().then((voice: any) => console.log(voice))
           TextToSpeech.speak({
             text: this.aiMsg,
-            lang: 'it-IT',
-            rate: 1.2,
+            lang: "IT-it",
+            rate: 1.0,
             pitch: 1.0,
             volume: 1.0,
-            voice: 11,
+            voice: this.voice,
             category: 'ambient'
           })
       }
@@ -127,3 +138,4 @@ export class ChatPage implements OnInit {
     
   
 }
+
