@@ -1,7 +1,4 @@
-import { Injectable } from '@angular/core';
-import { Capacitor } from '@capacitor/core';
-import { TextToSpeech } from '@capacitor-community/text-to-speech';
-import {Platform} from '@ionic/angular';
+import { ChangeDetectorRef, Injectable } from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +8,8 @@ export class ChatService {
   public messages: Message[] = [];
   public voice: boolean = false;
 
-  constructor() { }
+
+  constructor() {}
 
   public async addNewMessage(message: Message) {
     this.messages.push(message);
@@ -21,7 +19,7 @@ export class ChatService {
     this.voice = !this.voice
     
   }
-  
+
 }
 
 export interface Message {

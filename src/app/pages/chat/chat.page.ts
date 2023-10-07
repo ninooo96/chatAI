@@ -2,9 +2,7 @@ import { Component, OnInit, Injectable, ViewChild } from '@angular/core';
 import {ChatService } from '../../services/chat.service';
 import { HttpClient, HttpErrorResponse} from '@angular/common/http';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
-import { Observable } from 'rxjs';
-import { IonContent } from '@ionic/angular';
-import { getLocaleWeekEndRange } from '@angular/common';
+import { SpeechRecognition } from "@capacitor-community/speech-recognition";
 
 
 
@@ -25,10 +23,13 @@ export class ChatPage implements OnInit {
   url = "";
   voice = 0;
   first = true;
+  voiceMsg = "";
+  recording = false;
+  stop = false;
 
   public supportedVoices: SpeechSynthesisVoice[] = [];
 
-  constructor(public chatService: ChatService, private http: HttpClient) {}
+  constructor(public chatService: ChatService, private http: HttpClient) {SpeechRecognition.requestPermissions()}
 
   ngOnInit() {
     this.chatService.addNewMessage({
@@ -41,7 +42,7 @@ export class ChatPage implements OnInit {
       this.supportedVoices = result.voices;
       console.log(result.voices.length);
       for (let i = 0; i < this.supportedVoices.length; i++) {
-        if(this.supportedVoices[i].lang == "it-IT"){
+        if(this.supportedVoices[i].lang == "it-IT" || this.supportedVoices[i].lang.includes("ita")){
           this.voice = i;
           break;
         }
@@ -74,6 +75,51 @@ export class ChatPage implements OnInit {
 
   }
   
+  public setVoiceMessage() {
+    this.startRecognition()
+    console.log("page: " + this.newMsg)
+    // this.newMsg = this.chatService.voiceMsg
+    
+  }
+
+  async startRecognition(){
+    const {available} = await SpeechRecognition.available();
+
+    if(available) {
+      this.recording=true
+      SpeechRecognition.start({
+        language: "it-IT",
+        popup: false,
+        partialResults: false,
+
+      })
+      .then((data : any) =>{
+        this.newMsg = data.matches[0]
+        console.log("speech: " + this.newMsg)
+        this.setMessage()
+      })
+
+      // SpeechRecognition.addListener("partialResults", (data: any) => {
+      //   console.log("partialResults was fired", data.matches);
+      //   if(data.matches && data.matches.length > 0) {
+      //     this.newMsg = data.matches[0]
+          
+      //   }})
+      // .then(() =>{
+      //   this.stop = true
+      //   this.newMsg = this.voiceMsg
+        // console.log("speech: " + this.newMsg)
+
+        // this.setMessage()
+      // });
+    }
+  }
+
+  async stopRecognition() {
+    this.recording = false;
+    await SpeechRecognition.stop();
+  }
+
   public onClickTextArea(){
       setTimeout(() => {
         this.content.scrollToBottom(300)}, 200);
@@ -101,10 +147,17 @@ export class ChatPage implements OnInit {
             volume: 1.0,
             voice: this.voice,
             category: 'ambient'
+          }).finally(() =>{
+            if(this.chatService.voice){
+              this.setVoiceMessage()
+            }
           })
           }
-        
+          
       })).catch((err: HttpErrorResponse) => {
+        // TextToSpeech.getSupportedLanguages().then((lang: any)  => console.log(lang))
+        // TextToSpeech.getSupportedVoices().then((voice: any) => console.log(voice))
+
         this.aiMsg = "Codice errato o connessione persa. \nScrivi il codice per collegarti al Public URL";
         this.chatService.addNewMessage({
           msg: this.aiMsg,
@@ -123,6 +176,10 @@ export class ChatPage implements OnInit {
             volume: 1.0,
             voice: this.voice,
             category: 'ambient'
+          }).finally(() =>{
+            if(this.chatService.voice){
+              this.setVoiceMessage()
+            }
           })
       }
       setTimeout(() => {
