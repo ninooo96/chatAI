@@ -1,1 +1,3 @@
-Chat app to communicate with a LLM. Developed in Ionic + Angular 
+Chat app to communicate with a LLM through API calls. 
+
+Developed in Ionic + Angular 
